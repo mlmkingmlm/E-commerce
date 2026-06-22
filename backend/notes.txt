@@ -1,0 +1,4 @@
+username = kymar7850817933_db_user
+password = cZob0GR6AM7c9ZKp
+
+mongodb+srv://kymar7850817933_db_user:cZob0GR6AM7c9ZKp@ecommerce-cluster.81cu1vi.mongodb.net/?appName=ecommerce-cluster

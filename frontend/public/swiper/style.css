@@ -1,0 +1,25 @@
+
+/* Main Swiper wrapper */
+.mySwiper-product {
+  width: 100%;
+  height: 400px;
+}
+
+/* Each slide (card) */
+.product-swiper-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden; /* ensures image stays inside rounded corners */
+}
+
+/* Slide images */
+.mySwiper .swiper-slide .productswiper-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* or cover if you want zoomed images */
+  border-radius: 12px;
+}
