@@ -16,21 +16,13 @@ function Orders() {
   const [reviewmsg, setReviewmsg] = useState('');
 
   const dispatch = useDispatch();
-  const CheckoutStateData = useSelector(state => state.CheckoutStateData);
+  const { data: CheckoutStateData } = useSelector(state => state.CheckoutStateData);
   const notify = (msg) => toast(msg);
 
   // 1️⃣ Fetch checkout data on mount
   useEffect(() => {
     dispatch(getCheckout());
-  }, [dispatch]);
-
-  // 2️⃣ Filter orders once Redux data updates
-  useEffect(() => {
-    if (CheckoutStateData?.length > 0) {
-      const userId = localStorage.getItem('userid');
-      setOrders(CheckoutStateData.filter(x => x.user.user === userId));
-    }
-  }, [CheckoutStateData]);
+  }, []);
 
   // 3️⃣ Toggle single order details
   const handleViewDetails = (id) => {
@@ -149,8 +141,8 @@ function Orders() {
                 </div>
 
                 {/* orders mapping */}
-                {orders.length > 0 ? (
-                  orders.map((order) => (
+                {CheckoutStateData.length > 0 ? (
+                  CheckoutStateData.map((order) => (
                     <div className="card rounded-0 mb-3" key={order.id}>
                       <div className="card-body">
                         <div className="d-flex flex-column flex-xl-row gap-3">

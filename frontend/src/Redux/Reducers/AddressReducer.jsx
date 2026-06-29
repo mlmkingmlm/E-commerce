@@ -1,5 +1,5 @@
 import { act } from "react";
-import { CREATE_ADDRESS_FAIL, CREATE_ADDRESS_RED, GET_ADDRESS_RED, UPDATE_ADDRESS_FAIL, UPDATE_ADDRESS_RED } from "../Constants";
+import { CREATE_ADDRESS_FAIL, CREATE_ADDRESS_RED, DELETE_ADDRESS_RED, GET_ADDRESS_RED, UPDATE_ADDRESS_FAIL, UPDATE_ADDRESS_RED, DELETE_ADDRESS_FAIL } from "../Constants";
 
 const initialState = {
     data: [],
@@ -52,6 +52,23 @@ export function addressReducer(state = initialState, action) {
                 success: false,
                 error: action.error
             };
+
+        case DELETE_ADDRESS_RED:
+            return {
+                ...state,
+                loading: false,
+                data: state.data.filter(item => item._id !== action.payload), // ✅ UI update
+                actionStatus: "SUCCESS",
+                message: action.message
+            }
+
+        case DELETE_ADDRESS_FAIL:
+            return {
+                ...state,
+                loading: false,
+                success: false,
+                error: action.error
+            }
 
         default:
             return state

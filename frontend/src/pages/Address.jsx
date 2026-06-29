@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Breadcrup from '../component/Breadcrup'
 import UserSidebar from '../component/UserSidebar'
 import { useDispatch, useSelector } from 'react-redux'
-import { createAddress, getAddress, updateAddress } from "../Redux/ActionCreators/AddressActionCreator"
+import { createAddress, deleteAddress, getAddress, updateAddress } from "../Redux/ActionCreators/AddressActionCreator"
 import FormValidator from '../../validators/FormValidators'
 
 const INITIAL_DATA = {
@@ -81,20 +81,10 @@ export default function BuyerAddress() {
       await dispatch(updateAddress({ id: updateId, data: data }))
     }
     setShowModal(false);
-    fetchAddress();
   }
 
   async function deleteRecord(id) {
-    if (window.confirm("Are You Sure to Delete that Address")) {
-      let response = await fetch(`${import.meta.env.VITE_SITE_SERVER}/address/${id}`, {
-        method: "DELETE",
-        headers: {
-          "content-type": "application/json"
-        }
-      })
-      response = await response.json()
-      getAPIData()
-    }
+    dispatch(deleteAddress(id))
   }
 
   useEffect(() => {

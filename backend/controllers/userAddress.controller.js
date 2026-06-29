@@ -77,6 +77,7 @@ export const updateAddress = async (req, res) => {
 export const deleteAddress = async (req, res) => {
   try {
     let { id } = req.params;
+    console.log(id)
 
     const result = await userAddressModule.findByIdAndDelete(id);
 
@@ -84,7 +85,7 @@ export const deleteAddress = async (req, res) => {
       res.status(200).json({
         success: true,
         message: "Address Deleted successfully",
-        data
+        resultObj:result
       });
     }
 

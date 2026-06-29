@@ -6,24 +6,27 @@ import { Link } from 'react-router-dom';
 import { createCheckout } from '../Redux/ActionCreators/CheckoutActionCreator';
 import { updateProduct, getProduct } from '../Redux/ActionCreators/ProductActionCreator';
 import { deleteCart } from '../Redux/ActionCreators/CartActionCreator';
+import { getAddress } from "../Redux/ActionCreators/AddressActionCreator"
 import { useNavigate } from 'react-router-dom';
 
 export default function CheckoutPage() {
     let [cart, setCart] = useState([])
-    let CartStateData = useSelector(state => state.CartStateData)
-    let ProductStateData = useSelector(state => state.ProductStateData)
+    const { data: CartStateData } = useSelector(state => state.CartStateData)
+    const { data: ProductStateData } = useSelector(state => state.ProductStateData)
     let [total, setTotal] = useState(0)
     let [subtotal, setSubtotal] = useState(0)
     let [shipping, setShipping] = useState(0)
     let [outofstock, setOutofstock] = useState(false)
-    let [address, setAddress] = useState([])
+    const { data: AddressStateData } = useSelector(state => state.AddressStateData)
     let [selectAddress, setSelectAddress] = useState({})
     let [mode, setMode] = useState("COD")
     let dispatch = useDispatch()
     let navigate = useNavigate()
+
     function calculation(cart) {
         let sum = 0
-        cart.forEach(x => sum = sum + x.total)
+        cart.forEach(item => sum += item?.product?.finalPrice * item?.quantity)
+
         if (sum > 0 && sum < 1000) {
             setShipping(150)
             setTotal(sum + 150)
@@ -37,68 +40,53 @@ export default function CheckoutPage() {
 
     function placeOrder() {
         let item = {
-            user: selectAddress,
-            orderStatus: "Order is Placed",
+            user: localStorage.getItem("userid"),
+            address: selectAddress._id,
             paymentMode: mode,
-            paymentStatus: "Pending",
             subtotal: subtotal,
             shipping: shipping,
             total: total,
-            date: new Date(),
-            product: cart
+            products: CartStateData.map(item => ({
+                product: item.product._id,
+                name: item.product.name,
+                price: item.product.finalPrice,
+                qty: item.quantity,
+                total: item.product.finalPrice * item.quantity
+            }))
         }
         dispatch(createCheckout(item))
-        cart.forEach(item => {
-            let p = ProductStateData.find(x => x.id === item.product)
-            p.stockQuantity = p.stockQuantity - item.qty
-            p.stock = p.stockQuantity === 0 ? false : true
-            dispatch(updateProduct(p))
-            dispatch(deleteCart({ id: item.id }))
-        })
+        // cart.forEach(item => {
+        //     let p = ProductStateData.find(x => x.id === item.product)
+        //     p.stockQuantity = p.stockQuantity - item.qty
+        //     p.stock = p.stockQuantity === 0 ? false : true
+        //     dispatch(updateProduct(p))
+        //     dispatch(deleteCart({ id: item.id }))
+        // })
         navigate("/order-confirmation")
     }
 
     useEffect(() => {
-        (() => {
-            dispatch(getCart())
-            if (CartStateData.length) {
-                let data = CartStateData.filter(x => x.user === localStorage.getItem("userid"))
-                setCart(data)
-                calculation(data)
-            }
-            else {
-                setCart([])
-                calculation([])
-            }
-        }
-        )()
-    }, [CartStateData.length])
+        const hasOutOfStock = CartStateData.some(item => {
+            const p = ProductStateData.find(
+                x => x._id === item.product
+            );
+
+            return p && !p.stock;
+        });
+
+        setOutofstock(hasOutOfStock);
+
+    }, [CartStateData, ProductStateData]);
 
     useEffect(() => {
-        (() => {
-            dispatch(getProduct())
-            if (CartStateData.length && ProductStateData.length) {
-                let cart = CartStateData.filter(x => x.user === localStorage.getItem("userid"))
-                cart.forEach(item => {
-                    let p = ProductStateData.find(x => x.id === item.product)
-                    if (p.stock === false) {
-                        setOutofstock(true)
-                    }
-                })
-            }
-        })()
-    }, [ProductStateData.length])
-
-
-    useEffect(() => {
-        (async () => {
-            let response = await fetch(`${import.meta.env.VITE_SITE_SERVER}/address`);
-            response = await response.json();
-            let userAddress = response.filter(x => x.user === localStorage.getItem("userid"));
-            setAddress(userAddress);
-            setSelectAddress(userAddress[0])
-        })();
+        dispatch(getAddress());
+        dispatch(getCart());
+        dispatch(getProduct());
     }, [])
+
+    useEffect(() => {
+        calculation(CartStateData)
+    }, [CartStateData])
     return (
         <>
             {/*start page content*/}
@@ -117,8 +105,8 @@ export default function CheckoutPage() {
                         <div className="row g-4">
                             <div className="col-12 col-lg-6 col-xl-6">
                                 <h6 className="fw-bold mb-3 py-2 px-3 bg-light">Please Carefully Select Address</h6>
-                                {address.length ? address.map(add => {
-                                    return <div className="card rounded-0 mb-3" key={add.id}>
+                                {AddressStateData.length ? AddressStateData.map(add => {
+                                    return <div className="card rounded-0 mb-3" key={add._id}>
                                         <div className="card-body">
                                             <div className="d-flex flex-column flex-xl-row gap-3">
                                                 <div className="address-info form-check flex-grow-1">
@@ -126,20 +114,20 @@ export default function CheckoutPage() {
                                                         className="form-check-input"
                                                         type="radio"
                                                         name="flexRadioDefault"
-                                                        id={add.id}
-                                                        checked={selectAddress.id === add.id}
+                                                        id={add._id}
+                                                        checked={selectAddress._id === add._id}
                                                         onChange={() => { setSelectAddress(add) }}
                                                     />
                                                     <label
                                                         className="form-check-label"
-                                                        htmlFor={add.id}
+                                                        htmlFor={add._id}
                                                     >
                                                         <span className="fw-bold mb-0 h5">{add.name}</span>
                                                         <br />
                                                         {add.address}, {add.city} <br />
-                                                        {add.state} - {add.pin}
+                                                        {add.state} - {add.pincode}
                                                         <br />
-                                                        Mobile: <span className="fw-bold text-black">{add.phone}</span>
+                                                        Mobile: <span className="fw-bold text-black">{add.mobile}</span>
                                                     </label>
                                                 </div>
 
@@ -248,7 +236,7 @@ export default function CheckoutPage() {
                                             <p className="mb-0">{total}</p>
                                         </div>
                                         {
-                                            cart.length && outofstock === false ?
+                                            CartStateData.length && outofstock === false ?
                                                 <div className="d-grid mt-4">
                                                     <button
                                                         type="button"

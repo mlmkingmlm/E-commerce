@@ -13,6 +13,7 @@ import userRoute from "./routes/user.route.js"
 import wishListRoute from "./routes/wishlist.route.js"
 import cartRoute from "./routes/cart.route.js"
 import userAddressRoute from "./routes/userAddress.route.js"
+import checkoutRoutes from "./routes/checkout.route.js"
 import cors from "cors";
 
 
@@ -33,6 +34,7 @@ app.use("/api/user", userRoute)
 app.use("/api/wishlist", wishListRoute)
 app.use("/api/cart", cartRoute)
 app.use("/api/address", userAddressRoute)
+app.use("/api/checkout", checkoutRoutes)
 
 app.get("/", (req, res) => {
   res.send("running")

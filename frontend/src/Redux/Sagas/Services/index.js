@@ -91,6 +91,17 @@ export async function getRecord(collection) {
                 }
             );
         }
+         else if (collection == "checkout") {
+            var response = await fetch(
+                `http://localhost:8000/api/checkout`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    }
+                }
+            );
+        }
         else {
             var response = await fetch(`http://localhost:8000/api/subcategory`, {
                 method: "GET"
